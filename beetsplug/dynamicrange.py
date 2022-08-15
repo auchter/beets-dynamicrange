@@ -1,10 +1,8 @@
 from beets.plugins import BeetsPlugin
-from beets.ui import Subcommand
 from beets.util import command_output, displayable_path, par_map
 from beets.dbcore import types
 from beets import ui
 import os
-import subprocess
 
 
 class DynamicRange(BeetsPlugin):
@@ -39,7 +37,7 @@ class DynamicRange(BeetsPlugin):
         self.handle_album(album)
 
     def commands(self):
-        dr_command = Subcommand('dr', help="compute dynamic range of music")
+        dr_command = ui.Subcommand('dr', help="compute dynamic range of music")
         dr_command.parser.add_album_option()
         dr_command.parser.add_option(
             '-f', '--force', action='store_true', default=False, dest='force',
