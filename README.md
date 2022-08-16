@@ -41,6 +41,7 @@ albums (or all by default):
 - `dr_min`, the minimum track DR for the album
 - `dr_max`, the maximum track DR for the album
 - `dr_avg`, the average track DR for the album
+- `dr_wavg`, the weighted average track DR for the album (scaled by time)
 
 
 ## Development

@@ -17,6 +17,7 @@ class DynamicRange(BeetsPlugin):
         'dr_min': types.INTEGER,
         'dr_max': types.INTEGER,
         'dr_avg': types.INTEGER,
+        'dr_wavg': types.INTEGER,
     }
 
     def __init__(self):
@@ -118,7 +119,14 @@ class DynamicRange(BeetsPlugin):
             par_map(lambda item: self.handle_item(item, force), items)
 
             drs = [item['dr'] for item in items]
+            lens = [item['length'] for item in items]
+
             album['dr_min'] = min(drs)
             album['dr_max'] = max(drs)
             album['dr_avg'] = int(round(sum(drs) / len(drs)))
+
+            wavg = 0
+            for dr, length in zip(drs, lens):
+                wavg += dr * length
+            album['dr_wavg'] = int(round(wavg / sum(lens)))
             album.store()
