@@ -3,6 +3,7 @@ from beets.util import command_output, displayable_path, par_map
 from beets.dbcore import types
 from beets import ui
 import os
+import subprocess
 
 
 class DynamicRange(BeetsPlugin):
@@ -61,15 +62,29 @@ class DynamicRange(BeetsPlugin):
 
     def compute_track_dr(self, file):
         cmd = [self.config['command'].as_str(), '-f', file]
-        lines = command_output(cmd).stdout.decode('utf-8').split('\n')
-        for line in lines:
-            if line.startswith('DR'):
-                dr = int(line.split('=')[1])
-            elif line.startswith('Peak dB'):
-                peak = float(line.split('=')[1])
-            elif line.startswith('Rms dB'):
-                rms = float(line.split('=')[1])
-        return (dr, peak, rms)
+        self._log.debug(f"running {cmd}")
+        try:
+            proc = command_output(cmd)
+        except (OSError, subprocess.CalledProcessError) as e:
+            self._log.debug(f"got exception {e}")
+            return None
+        else:
+            lines = proc.stdout.decode('utf-8').split('\n')
+
+            if lines == ['']:
+                stderr = proc.stderr.decode('utf-8')
+                self._log.warning(f"dr14_tmeter returned no output for {file}")
+                self._log.warning(f"stderr: {stderr}")
+                return None
+
+            for line in lines:
+                if line.startswith('DR'):
+                    dr = int(line.split('=')[1])
+                elif line.startswith('Peak dB'):
+                    peak = float(line.split('=')[1])
+                elif line.startswith('Rms dB'):
+                    rms = float(line.split('=')[1])
+            return (dr, peak, rms)
 
     def item_requires_dr(self, item):
         return not all([hasattr(item, k) for k in self.item_types.keys()])
@@ -82,15 +97,17 @@ class DynamicRange(BeetsPlugin):
                 return
 
             try:
-                dr, peak, rms = self.compute_track_dr(item.path)
+                ret = self.compute_track_dr(item.path)
             except Exception as e:
                 self._log.error("error computing dynamic range: {}", str(e))
                 return
-
-            item['dr'] = dr
-            item['dr_peak_dB'] = peak
-            item['dr_rms_dB'] = rms
-            item.store()
+            else:
+                if ret is not None:
+                    dr, peak, rms = ret
+                    item['dr'] = dr
+                    item['dr_peak_dB'] = peak
+                    item['dr_rms_dB'] = rms
+                    item.store()
 
     def album_requires_dr(self, album):
         return not all([hasattr(album, k) for k in self.album_types.keys()])
