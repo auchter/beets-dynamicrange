@@ -60,8 +60,8 @@ class DynamicRange(BeetsPlugin):
             par_map(lambda item: self.handle_item(item, opts.force), items)
 
     def compute_track_dr(self, file):
-        cmd = self.config['command'].as_str()
-        lines = command_output([cmd, "-f", file]).stdout.decode('utf-8').split('\n')
+        cmd = [self.config['command'].as_str(), '-f', file]
+        lines = command_output(cmd).stdout.decode('utf-8').split('\n')
         for line in lines:
             if line.startswith('DR'):
                 dr = int(line.split('=')[1])
