@@ -118,6 +118,10 @@ class DynamicRange(BeetsPlugin):
             items = album.items()
             par_map(lambda item: self.handle_item(item, force), items)
 
+            if any([self.item_requires_dr(item) for item in items]):
+                self._log.warning(f"failed to process {album['album']}")
+                return
+
             drs = [item['dr'] for item in items]
             lens = [item['length'] for item in items]
 
