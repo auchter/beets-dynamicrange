@@ -43,6 +43,12 @@ albums (or all by default):
 - `dr_avg`, the average track DR for the album
 
 
+## Development
+
+```
+$ nix develop
+```
+
 ## References
 
 - [Dynamic Range DB](https://dr.loudness-war.info/)
